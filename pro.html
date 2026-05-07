@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Result Analyzer | MCA Mini Project</title>
+
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --gold: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 3rem 0 2.5rem;
+    animation: fadeDown 0.7s ease;
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    padding: 0.3rem 1rem;
+    border-radius: 50px;
+    letter-spacing: 2px;
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e8e8f0 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  /* FORM CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--accent);
+  }
+
+  .card-title span {
+    background: rgba(108,99,255,0.15);
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  /* Student Info Grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media(max-width: 520px) { .info-grid { grid-template-columns: 1fr; } }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 1px;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.95rem;
+    padding: 0.7rem 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+  }
+
+  select option { background: var(--surface); }
+
+  /* Subject rows */
+  #subjects-container { display: flex; flex-direction: column; gap: 0.8rem; }
+
+  .subject-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.6rem;
+    align-items: end;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  @media(max-width: 540px) {
+    .subject-row {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .subject-row > div:first-child { grid-column: span 2; }
+    .subject-row .remove-btn {
+      grid-column: span 2;
+      width: 100%;
+      padding: 0.7rem;
+    }
+  }
+
+  .subject-num {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+
+  /* Buttons */
+  .btn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-add {
+    background: rgba(108,99,255,0.15);
+    color: var(--accent);
+    border: 1px dashed var(--accent);
+    padding: 0.65rem 1.2rem;
+    font-size: 0.88rem;
+    width: 100%;
+    margin-top: 0.8rem;
+  }
+
+  .btn-add:hover { background: rgba(108,99,255,0.25); }
+
+  .remove-btn {
+    background: rgba(255,101,132,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(255,101,132,0.35);
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .remove-btn:hover { background: rgba(255,101,132,0.25); }
+
+  .btn-analyze {
+    background: linear-gradient(135deg, var(--accent), #9c8cff);
+    color: #fff;
+    padding: 1rem 2.5rem;
+    font-size: 1.05rem;
+    border-radius: 12px;
+    width: 100%;
+    margin-top: 0.5rem;
+    box-shadow: 0 8px 24px rgba(108,99,255,0.3);
+    letter-spacing: 0.5px;
+  }
+
+  .btn-reset {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.7rem 1.5rem;
+    font-size: 0.88rem;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  /* RESULTS */
+  #result-section { display: none; animation: fadeUp 0.6s ease; }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .student-name-display {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media(max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-box.s1::before { background: linear-gradient(90deg, var(--accent), #9c8cff); }
+  .stat-box.s2::before { background: linear-gradient(90deg, var(--accent3), #38f9d7); }
+  .stat-box.s3::before { background: linear-gradient(90deg, var(--accent2), #ffa07a); }
+  .stat-box.s4::before { background: linear-gradient(90deg, var(--gold), #ff9a3c); }
+
+  .stat-val {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  /* Grade badge */
+  .grade-badge {
+    display: inline-block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    padding: 0.2rem 0.8rem;
+    border-radius: 10px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  /* Subject table */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    font-size: 0.92rem;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(108,99,255,0.05); }
+
+  .grade-chip {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .bar-row { display: flex; align-items: center; gap: 0.8rem; }
+
+  .bar-label {
+    font-size: 0.78rem;
+    width: 130px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .bar-track {
+    flex: 1;
+    background: var(--surface);
+    border-radius: 50px;
+    height: 28px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 0.6rem;
+    font-size: 0.75rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: #fff;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    min-width: 2rem;
+  }
+
+  /* Result tag */
+  .result-tag {
+    display: inline-block;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .pass { background: rgba(67,233,123,0.15); color: var(--accent3); border: 1px solid rgba(67,233,123,0.3); }
+  .fail { background: rgba(255,101,132,0.15); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); }
+
+  /* Remarks */
+  .remark-box {
+    background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(255,101,132,0.05));
+    border: 1px solid rgba(108,99,255,0.2);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .remark-box strong { color: var(--accent); font-style: normal; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72rem;
+    padding-top: 3rem;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="badge">MCA Mini Project</div>
+    <h1>Student Result<br/>Analyzer</h1>
+    <p class="subtitle">// Enter marks → Get instant analysis</p>
+  </header>
+
+  <!-- INPUT FORM -->
+  <div id="form-section">
+
+    <!-- Student Info -->
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-title"><span>👤</span> Student Information</div>
+      <div class="info-grid">
+        <div>
+          <label>Student Name</label>
+          <input type="text" id="student-name" placeholder="e.g. Rahul Sharma" />
+        </div>
+        <div>
+          <label>Roll Number</label>
+          <input type="text" id="roll-no" placeholder="e.g. MCA2024001" />
+        </div>
+        <div>
+          <label>Semester</label>
+          <select id="semester">
+            <option value="">Select Semester</option>
+            <option>Semester 1</option>
+            <option>Semester 2</option>
+            <option>Semester 3</option>
+            <option>Semester 4</option>
+          </select>
+        </div>
+        <div>
+          <label>Academic Year</label>
+          <input type="text" id="academic-year" placeholder="e.g. 2024-25" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="card" style="animation-delay:0.2s">
+      <div class="card-title"><span>📚</span> Subject Marks</div>
+      <div id="subjects-container"></div>
+      <button class="btn btn-add" onclick="addSubject()">+ Add Subject</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="animation-delay:0.3s; padding:1.2rem 2rem;">
+      <button class="btn btn-analyze" onclick="analyze()">🔍 Analyze Result</button>
+      <button class="btn btn-reset" onclick="resetAll()">↺ Reset</button>
+    </div>
+
+  </div>
+
+  <!-- RESULT SECTION -->
+  <div id="result-section">
+
+    <div class="card">
+      <div class="result-header">
+        <div>
+          <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:0.3rem;">Result Card</div>
+          <div class="student-name-display" id="r-name">—</div>
+          <div style="color:var(--muted);font-size:0.85rem;font-family:'Space Mono',monospace;" id="r-meta">—</div>
+        </div>
+        <div id="r-result-tag"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box s1">
+          <div class="stat-val" id="r-total">—</div>
+          <div class="stat-label">Total Marks</div>
+        </div>
+        <div class="stat-box s2">
+          <div class="stat-val" id="r-percent">—</div>
+          <div class="stat-label">Percentage</div>
+        </div>
+        <div class="stat-box s3">
+          <div class="stat-val" id="r-cgpa">—</div>
+          <div class="stat-label">CGPA (10)</div>
+        </div>
+        <div class="stat-box s4">
+          <div>
+            <span class="grade-badge" id="r-grade-badge">—</span>
+          </div>
+          <div class="stat-label">Grade</div>
+        </div>
+      </div>
+
+      <hr class="divider"/>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Subject</th>
+              <th>Max</th>
+              <th>Obtained</th>
+              <th>%</th>
+              <th>Grade</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+
+      <hr class="divider"/>
+
+      <!-- Bar Chart -->
+      <div class="card-title" style="margin-bottom:1rem;"><span>📊</span> Performance Chart</div>
+      <div class="bar-chart" id="bar-chart"></div>
+
+      <hr class="divider"/>
+
+      <!-- Remark -->
+      <div class="card-title" style="margin-bottom:0.8rem;"><span>💬</span> Remark</div>
+      <div class="remark-box" id="remark-box"></div>
+
+      <button class="btn btn-reset" onclick="resetAll()" style="margin-top:1.5rem; width:100%;">↺ Analyze Another Student</button>
+    </div>
+
+  </div>
+
+  <footer>SMART STUDENT RESULT ANALYZER &nbsp;•&nbsp; MCA MINI PROJECT &nbsp;•&nbsp; HTML / CSS / JS</footer>
+
+</div>
+
+<script>
+// ─── Default subjects ───────────────────────────────────────
+const defaultSubjects = [
+  "Data Structures", "DBMS", "Operating System", "Computer Networks", "Software Engineering"
+];
+
+let subjectCount = 0;
+
+function addSubject(name = '') {
+  subjectCount++;
+  const n = subjectCount;
+  const div = document.createElement('div');
+  div.className = 'subject-row';
+  div.id = `sub-row-${n}`;
+  div.innerHTML = `
+    <div>
+      <span class="subject-num">Subject ${n}</span>
+      <input type="text" id="sub-name-${n}" placeholder="Subject name" value="${name}"/>
+    </div>
+    <div>
+      <label>Max Marks</label>
+      <input type="number" id="sub-max-${n}" placeholder="100" min="1" max="1000" value="100"/>
+    </div>
+    <div>
+      <label>Obtained</label>
+      <input type="number" id="sub-obt-${n}" placeholder="0" min="0"/>
+    </div>
+    <button class="remove-btn" onclick="removeSubject(${n})" title="Remove">✕</button>
+  `;
+  document.getElementById('subjects-container').appendChild(div);
+}
+
+function removeSubject(n) {
+  const el = document.getElementById(`sub-row-${n}`);
+  if (el) el.remove();
+}
+
+// Init with default subjects
+defaultSubjects.forEach(s => addSubject(s));
+
+// ─── Grade logic ─────────────────────────────────────────────
+function getGrade(pct) {
+  if (pct >= 90) return { g: 'O',  label: 'Outstanding', color: '#ffd700', bg: 'rgba(255,215,0,0.15)' };
+  if (pct >= 80) return { g: 'A+', label: 'Excellent',   color: '#43e97b', bg: 'rgba(67,233,123,0.15)' };
+  if (pct >= 70) return { g: 'A',  label: 'Very Good',   color: '#38f9d7', bg: 'rgba(56,249,215,0.15)' };
+  if (pct >= 60) return { g: 'B+', label: 'Good',        color: '#6c63ff', bg: 'rgba(108,99,255,0.15)' };
+  if (pct >= 50) return { g: 'B',  label: 'Average',     color: '#a78bfa', bg: 'rgba(167,139,250,0.15)' };
+  if (pct >= 40) return { g: 'C',  label: 'Pass',        color: '#ffa07a', bg: 'rgba(255,160,122,0.15)' };
+  return           { g: 'F',  label: 'Fail',         color: '#ff6584', bg: 'rgba(255,101,132,0.15)' };
+}
+
+function pctToCGPA(pct) {
+  // Common formula: CGPA = (% - 7.5) / 9.5 mapped to 10-scale
+  let cgpa = ((pct / 10)).toFixed(1);
+  if (cgpa > 10) cgpa = 10.0;
+  return cgpa;
+}
+
+// ─── Bar colors ──────────────────────────────────────────────
+const barColors = [
+  'linear-gradient(90deg,#6c63ff,#9c8cff)',
+  'linear-gradient(90deg,#43e97b,#38f9d7)',
+  'linear-gradient(90deg,#ff6584,#ff9a3c)',
+  'linear-gradient(90deg,#ffd700,#ff9a3c)',
+  'linear-gradient(90deg,#38f9d7,#6c63ff)',
+  'linear-gradient(90deg,#a78bfa,#ff6584)',
+  'linear-gradient(90deg,#ffa07a,#ffd700)',
+];
+
+// ─── Analyze ─────────────────────────────────────────────────
+function analyze() {
+  const name = document.getElementById('student-name').value.trim() || 'Student';
+  const roll = document.getElementById('roll-no').value.trim() || '—';
+  const sem  = document.getElementById('semester').value || '—';
+  const year = document.getElementById('academic-year').value.trim() || '—';
+
+  const rows = document.querySelectorAll('.subject-row');
+  if (rows.length === 0) { alert('Please add at least one subject!'); return; }
+
+  let subjects = [];
+  let valid = true;
+
+  rows.forEach(row => {
+    const id = row.id.replace('sub-row-', '');
+    const sname = document.getElementById(`sub-name-${id}`)?.value.trim() || `Subject ${id}`;
+    const max   = parseFloat(document.getElementById(`sub-max-${id}`)?.value) || 100;
+    const obt   = parseFloat(document.getElementById(`sub-obt-${id}`)?.value);
+
+    if (isNaN(obt)) { valid = false; return; }
+    if (obt > max)  { alert(`"${sname}" — obtained marks cannot exceed max marks (${max})!`); valid = false; return; }
+
+    subjects.push({ name: sname, max, obt, pct: ((obt / max) * 100) });
+  });
+
+  if (!valid) return;
+  if (subjects.length === 0) { alert('Please enter marks for all subjects.'); return; }
+
+  const totalMax = subjects.reduce((s, x) => s + x.max, 0);
+  const totalObt = subjects.reduce((s, x) => s + x.obt, 0);
+  const overallPct = ((totalObt / totalMax) * 100).toFixed(2);
+  const cgpa = pctToCGPA(overallPct);
+  const overallGrade = getGrade(parseFloat(overallPct));
+  const passed = subjects.every(s => s.pct >= 40);
+
+  // Populate header
+  document.getElementById('r-name').textContent = name;
+  document.getElementById('r-meta').textContent = `${roll}  •  ${sem}  •  ${year}`;
+
+  const rt = document.getElementById('r-result-tag');
+  rt.innerHTML = `<span class="result-tag ${passed ? 'pass' : 'fail'}">${passed ? '✓ PASS' : '✗ FAIL'}</span>`;
+
+  document.getElementById('r-total').textContent = `${totalObt}/${totalMax}`;
+  document.getElementById('r-percent').textContent = `${overallPct}%`;
+  document.getElementById('r-cgpa').textContent = cgpa;
+
+  const gb = document.getElementById('r-grade-badge');
+  gb.textContent = overallGrade.g;
+  gb.style.color = overallGrade.color;
+  gb.style.background = overallGrade.bg;
+  gb.style.border = `1px solid ${overallGrade.color}40`;
+
+  const tbody = document.getElementById('result-tbody');
+  tbody.innerHTML = '';
+  subjects.forEach((s, i) => {
+    const g = getGrade(s.pct);
+    const statusPass = s.pct >= 40;
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:var(--muted);font-family:'Space Mono',monospace">${i+1}</td>
+        <td><strong>${s.name}</strong></td>
+        <td style="font-family:'Space Mono',monospace">${s.max}</td>
+        <td style="font-family:'Space Mono',monospace;color:${g.color}">${s.obt}</td>
+        <td style="font-family:'Space Mono',monospace">${s.pct.toFixed(1)}%</td>
+        <td><span class="grade-chip" style="color:${g.color};background:${g.bg}">${g.g}</span></td>
+        <td><span class="result-tag ${statusPass?'pass':'fail'}" style="font-size:0.72rem;padding:0.2rem 0.7rem">${statusPass?'Pass':'Fail'}</span></td>
+      </tr>
+    `;
+  });
+
+  // Bar chart
+  const bc = document.getElementById('bar-chart');
+  bc.innerHTML = '';
+  subjects.forEach((s, i) => {
+    const pct = s.pct.toFixed(1);
+    bc.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-label" title="${s.name}">${s.name}</div>
+        <div class="bar-track">
+          <div class="bar-fill" id="bar-${i}" style="width:0%;background:${barColors[i % barColors.length]}">
+            ${pct}%
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    subjects.forEach((s, i) => {
+      const el = document.getElementById(`bar-${i}`);
+      if (el) el.style.width = `${Math.min(s.pct, 100)}%`;
+    });
+  }, 100);
+
+  // Remark
+  const best = subjects.reduce((a, b) => a.pct > b.pct ? a : b);
+  const worst = subjects.reduce((a, b) => a.pct < b.pct ? a : b);
+  let remark = '';
+  if (parseFloat(overallPct) >= 85) {
+    remark = `<strong>${name}</strong> has shown an <strong>outstanding performance</strong> this semester with ${overallPct}% — an excellent result! Keep it up and aim for the top!`;
+  } else if (parseFloat(overallPct) >= 70) {
+    remark = `<strong>${name}</strong> has performed <strong>well this semester</strong> with ${overallPct}%. Best subject is <strong>${best.name}</strong> (${best.pct.toFixed(1)}%). Keep pushing forward!`;
+  } else if (parseFloat(overallPct) >= 50) {
+    remark = `<strong>${name}</strong> has <strong>passed the semester</strong> with ${overallPct}%. There is room for improvement, especially in <strong>${worst.name}</strong> (${worst.pct.toFixed(1)}%). Focus and stay consistent!`;
+  } else if (passed) {
+    remark = `<strong>${name}</strong> has <strong>just passed</strong> with ${overallPct}%. Needs to work harder especially in <strong>${worst.name}</strong>. Consistent effort will lead to better results!`;
+  } else {
+    remark = `<strong>${name}</strong> has <strong>failed</strong> this semester with ${overallPct}%. Please re-attempt the failed subjects. With dedication and hard work, better results are achievable!`;
+  }
+  document.getElementById('remark-box').innerHTML = remark;
+
+  // Show result
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('result-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Reset ───────────────────────────────────────────────────
+function resetAll() {
+  document.getElementById('student-name').value = '';
+  document.getElementById('roll-no').value = '';
+  document.getElementById('semester').value = '';
+  document.getElementById('academic-year').value = '';
+  document.getElementById('subjects-container').innerHTML = '';
+  subjectCount = 0;
+  defaultSubjects.forEach(s => addSubject(s));
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('form-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
